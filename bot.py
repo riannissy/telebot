@@ -49,7 +49,7 @@ async def run_bot():
     logging.info("🚀 Starting Telegram bot...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CallbackQueryHandler(button_handler))
-    await app.run_polling()
+    await app.run_polling(stop_signals=None)
 
 # === Flask server for Render ===
 web_app = Flask(__name__)
