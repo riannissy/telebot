@@ -3,6 +3,19 @@ import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
+from datetime import datetime
+import pytz
+import sys
+
+# Set timezone to Malaysia
+tz = pytz.timezone('Asia/Kuala_Lumpur')
+now = datetime.now(tz)
+
+# Run only between 7AM and 12PM
+if now.hour < 7 or now.hour >= 12:
+    sys.exit(0)
+
+
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 SOURCE_CHANNEL_ID = int(os.getenv("SOURCE_CHANNEL_ID"))
 DEST_CHANNEL_ID = int(os.getenv("DEST_CHANNEL_ID"))
