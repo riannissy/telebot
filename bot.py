@@ -3,7 +3,7 @@ import logging
 import asyncio
 import threading
 from flask import Flask
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
     CallbackQueryHandler,
@@ -16,7 +16,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# === Load environment variables ===
+# === Load env vars ===
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 SOURCE_A_CHANNEL_ID = int(os.getenv("SOURCE_A_CHANNEL_ID"))
 DEST_A_CHANNEL_ID = int(os.getenv("DEST_A_CHANNEL_ID"))
@@ -37,26 +37,29 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await query.edit_message_reply_markup(reply_markup=None)
             logging.info(f"✅ Forwarded message to {dest_id}")
     except Exception as e:
-        logging.error(f"Error in button_handler: {e}")
-
-# === Run Telegram bot in async thread ===
-async def run_bot():
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CallbackQueryHandler(button_handler))
-    await app.run_polling()
+        logging.error(f"❌ Error: {e}")
 
 # === Flask server to keep Render happy ===
 web_app = Flask(__name__)
 
 @web_app.route("/")
 def index():
-    return "✅ Bot is alive"
+    return "✅ Bot is running"
 
 def start_flask():
     port = int(os.environ.get("PORT", 10000))
     web_app.run(host="0.0.0.0", port=port)
 
-# === Main entrypoint ===
+# === Telegram bot runner ===
+async def run_bot():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CallbackQueryHandler(button_handler))
+    await app.run_polling()
+
+def start_bot():
+    asyncio.run(run_bot())
+
+# === Main ===
 if __name__ == "__main__":
     threading.Thread(target=start_flask).start()
-    asyncio.run(run_bot())
+    threading.Thread(target=start_bot).start()
