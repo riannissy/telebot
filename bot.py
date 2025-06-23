@@ -1,9 +1,8 @@
 import os
 import logging
 import asyncio
-import threading
 from flask import Flask
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
     CallbackQueryHandler,
@@ -13,7 +12,7 @@ from telegram.ext import (
 # === Logging ===
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# === Load environment variables (with logging) ===
+# === Load environment variables safely ===
 def get_env_var(key, default=None, required=True):
     value = os.getenv(key, default)
     if required and value is None:
@@ -28,7 +27,7 @@ DEST_A_CHANNEL_ID = int(get_env_var("DEST_A_CHANNEL_ID"))
 SOURCE_B_CHANNEL_ID = int(get_env_var("SOURCE_B_CHANNEL_ID"))
 DEST_B_CHANNEL_ID = int(get_env_var("DEST_B_CHANNEL_ID"))
 
-# === Telegram Bot Logic ===
+# === Telegram logic ===
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     try:
@@ -40,25 +39,27 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             message_text = query.message.text
             await context.bot.send_message(chat_id=dest_id, text=message_text)
             await query.edit_message_reply_markup(reply_markup=None)
-            logging.info(f"✅ Forwarded message to {dest_id}")
+            logging.info(f"✅ Forwarded to {dest_id}")
     except Exception as e:
-        logging.error(f"Error in button_handler: {e}")
+        logging.error(f"❌ Error: {e}")
 
-# === Async bot run ===
-async def run_bot():
-    logging.info("🚀 Starting Telegram bot...")
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CallbackQueryHandler(button_handler))
-    await app.run_polling(stop_signals=None)
-
-# === Flask server for Render ===
+# === Flask server ===
 web_app = Flask(__name__)
 
 @web_app.route('/')
 def home():
-    return "Bot is running"
+    return "Bot is running!"
+
+# === Combined async runner ===
+async def run_everything():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CallbackQueryHandler(button_handler))
+    await app.initialize()
+    await app.start()
+    asyncio.create_task(app.updater.start_polling())
 
 # === Entrypoint ===
 if __name__ == "__main__":
-    threading.Thread(target=lambda: asyncio.run(run_bot())).start()
+    loop = asyncio.get_event_loop()
+    loop.create_task(run_everything())
     web_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
