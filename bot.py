@@ -2,9 +2,9 @@ import telegram
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ApplicationBuilder, CallbackQueryHandler, ContextTypes, CommandHandler, MessageHandler, filters
 
-BOT_TOKEN = '6110699577:AAG4FOPkyrgbaWd2_EdcCz8bPyqSBcXbASY'
-SOURCE_CHANNEL_ID = '@asdpas1'  # Channel A ID (posting + reactions)
-DEST_CHANNEL_ID = '@tapopsgalaxy'    # Channel B ID (forwarding)
+BOT_TOKEN = 'BOT_TOKEN'
+SOURCE_CHANNEL_ID = 'SOURCE_CHANNEL_ID'  # Channel A ID (posting + reactions)
+DEST_CHANNEL_ID = 'DEST_CHANNEL_ID'    # Channel B ID (forwarding)
 
 
 # 2. Function to simulate receiving a form submission (replace with real logic later)
