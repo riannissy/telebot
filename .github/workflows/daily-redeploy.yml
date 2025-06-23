@@ -1,0 +1,23 @@
+name: Daily Redeploy Bot
+
+on:
+  schedule:
+    - cron: '0 23 * * *' # 7AM Malaysia time (UTC+8 = 11PM UTC)
+  workflow_dispatch:     # Optional: lets you manually trigger this too
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update timestamp to trigger redeploy
+        run: |
+          echo "Last deployed: $(date -u)" > last_deploy.txt
+          git config user.name "AutoDeploy Bot"
+          git config user.email "bot@example.com"
+          git add last_deploy.txt
+          git commit -m "Daily redeploy at $(date -u)" || echo "No changes to commit"
+          git push
